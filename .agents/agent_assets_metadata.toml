@@ -1,0 +1,44 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "QTJ65YrEuO0k_M7MeZUtN"
+uri = "file://artifacts/nova-car-rentals/public/images/hero.png"
+type = "image"
+title = "cinematic 4x4 SUV savanna"
+
+[[generated]]
+id = "_JUVL6NihfhiAZ_YcJ7iF"
+uri = "file://artifacts/nova-car-rentals/public/images/fleet-suv.png"
+type = "image"
+title = "luxury 4x4 suv fleet"
+
+[[generated]]
+id = "NNmVJLI1uhPuMbFFeqhhR"
+uri = "file://artifacts/nova-car-rentals/public/images/fleet-sedan.png"
+type = "image"
+title = "executive sedan fleet"
+
+[[generated]]
+id = "fKIM49n-EXAPWGTmKp3Yc"
+uri = "file://artifacts/nova-car-rentals/public/images/fleet-van.png"
+type = "image"
+title = "safari van fleet"
+
+[[generated]]
+id = "QQR4ikw50hQIhMxEO7oAV"
+uri = "file://artifacts/nova-car-rentals/public/images/rwanda.png"
+type = "image"
+title = "Rwanda landscape mountains"
+
+[[generated]]
+id = "DDK30x6Ta_vN10kCxVIbA"
+uri = "file://artifacts/nova-car-rentals/public/images/uganda.png"
+type = "image"
+title = "Uganda landscape savanna"
+
+[[generated]]
+id = "sl7Qt8eWVngPq1-woUN37"
+uri = "file://artifacts/nova-car-rentals/public/images/tanzania.png"
+type = "image"
+title = "Tanzania landscape Serengeti"

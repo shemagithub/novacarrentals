@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Nova Car Rentals"
+version = "1.0.0"
+id = "artifacts/nova-car-rentals"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25562
+
+[services.development]
+run = "pnpm --filter @workspace/nova-car-rentals run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/nova-car-rentals", "run", "build" ]
+publicDir = "artifacts/nova-car-rentals/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25562"
+BASE_PATH = "/"
