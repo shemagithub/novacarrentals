@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { PricingCalculator } from "@/components/PricingCalculator";
 
 const bookingSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
@@ -308,13 +309,16 @@ export default function Contact() {
               </div>
             </motion.div>
 
-            {/* Contact Info */}
+            {/* Contact Info + Calculator */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="space-y-6"
             >
+              {/* Pricing Calculator */}
+              <PricingCalculator />
+
               <div>
                 <h2 className="text-2xl font-display font-bold mb-2">Contact Details</h2>
                 <p className="text-muted-foreground text-sm">
