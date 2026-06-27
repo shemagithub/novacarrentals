@@ -17,6 +17,8 @@ import Services from "@/pages/services";
 import Destinations from "@/pages/destinations";
 import About from "@/pages/about";
 import Contact from "@/pages/contact";
+import Guides from "@/pages/guides";
+import GuideDetail from "@/pages/guide-detail";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ function Router() {
       <Route path="/destinations" component={Destinations} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+      <Route path="/guides" component={Guides} />
+      <Route path="/guides/:slug" component={GuideDetail} />
       <Route component={NotFound} />
     </Switch>
   );

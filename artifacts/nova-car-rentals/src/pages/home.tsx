@@ -2,8 +2,9 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 import {
   ArrowRight, CheckCircle2, Shield, Map, Clock,
-  Star, CarFront, Phone, Zap, Users, Globe,
+  Star, CarFront, Phone, Zap, Users, Globe, BookOpen,
 } from "lucide-react";
+import { guides } from "@/lib/guides-data";
 import { Button } from "@/components/ui/button";
 import { PricingCalculator } from "@/components/PricingCalculator";
 import { TestimonialsSection } from "@/components/Testimonials";
@@ -312,6 +313,64 @@ export default function Home() {
                 <p className="text-xs text-muted-foreground">All permits and documentation handled for you</p>
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── TRAVEL GUIDES TEASER ─── */}
+      <section className="py-24 bg-card border-y border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div>
+              <span className="text-primary font-bold text-xs uppercase tracking-widest">Travel Guides</span>
+              <h2 className="text-4xl font-display font-bold mt-3">
+                Know the Road<br />Before You Drive It.
+              </h2>
+              <p className="text-muted-foreground mt-4 max-w-lg text-sm leading-relaxed">
+                Expert guides to East Africa's greatest journeys — gorilla treks, Serengeti routes, city tours, and coastal road trips.
+              </p>
+            </div>
+            <Link href="/guides">
+              <Button variant="outline" className="gap-2 font-display uppercase tracking-wide text-xs shrink-0">
+                All Guides <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {guides.slice(0, 3).map((guide, i) => (
+              <motion.div
+                key={guide.slug}
+                {...fadeUp(i * 0.08)}
+              >
+                <Link href={`/guides/${guide.slug}`}>
+                  <div className="group bg-background border border-border hover:border-primary/50 transition-all duration-300 cursor-pointer h-full flex flex-col overflow-hidden">
+                    <div className={`h-36 bg-gradient-to-br ${guide.coverGradient} relative flex items-end p-5`}>
+                      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/5" />
+                      <div className="flex items-center gap-2 relative z-10">
+                        <span className="text-2xl">{guide.flag}</span>
+                        <span className="text-white/70 text-xs font-medium">{guide.country}</span>
+                      </div>
+                    </div>
+                    <div className="p-5 flex flex-col flex-1">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                        <BookOpen className="w-3 h-3" />
+                        {guide.readTime}
+                        <span>·</span>
+                        <span className="text-primary/80 font-medium">{guide.category}</span>
+                      </div>
+                      <h3 className="font-display font-bold text-foreground group-hover:text-primary transition-colors leading-snug mb-2">
+                        {guide.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed flex-1">{guide.subtitle}</p>
+                      <div className="mt-4 flex items-center gap-1 text-primary text-xs font-bold uppercase tracking-wider group-hover:gap-2 transition-all">
+                        Read Guide <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

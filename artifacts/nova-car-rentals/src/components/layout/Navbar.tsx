@@ -15,6 +15,7 @@ export function Navbar() {
     { href: "/fleet", label: t("nav_fleet") },
     { href: "/services", label: t("nav_services") },
     { href: "/destinations", label: t("nav_destinations") },
+    { href: "/guides", label: "Guides" },
     { href: "/about", label: t("nav_about") },
     { href: "/contact", label: t("nav_contact") },
   ];
