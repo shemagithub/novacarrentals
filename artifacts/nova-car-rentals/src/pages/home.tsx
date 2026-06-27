@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PricingCalculator } from "@/components/PricingCalculator";
+import { TestimonialsSection } from "@/components/Testimonials";
 import { useLang } from "@/contexts/LanguageContext";
 
 const fadeUp = (delay = 0) => ({
@@ -207,6 +208,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ─── TESTIMONIALS ─── */}
+      <TestimonialsSection variant="marquee" />
 
       {/* ─── FLEET TEASER ─── */}
       <section className="py-24 bg-background">

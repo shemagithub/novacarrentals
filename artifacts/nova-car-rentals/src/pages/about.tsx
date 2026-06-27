@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import { Shield, Heart, Globe, Zap, CheckCircle2, ArrowRight, Phone, Star } from "lucide-react";
+import { Shield, Heart, Globe, Zap, CheckCircle2, ArrowRight, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TestimonialsSection } from "@/components/Testimonials";
 
 const values = [
   {
@@ -219,7 +220,7 @@ export default function About() {
               </ul>
             </motion.div>
 
-            {/* Testimonials */}
+            {/* Testimonials placeholder kept for layout — full section below */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -227,22 +228,39 @@ export default function About() {
               className="space-y-4"
             >
               <span className="text-primary font-bold text-sm uppercase tracking-widest">What Clients Say</span>
-              {testimonials.map((t, i) => (
-                <div key={i} data-testid={`card-testimonial-${i}`} className="bg-card border border-border p-6">
-                  <div className="flex gap-0.5 mb-4">
-                    {[...Array(5)].map((_, s) => (
-                      <Star key={s} className="w-3.5 h-3.5 text-primary fill-primary" />
-                    ))}
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Over 10,000 satisfied travelers across Rwanda, Uganda, and Tanzania — from solo adventurers to multinational NGOs — have made NOVACAR their trusted fleet partner.
+              </p>
+              <div className="grid grid-cols-3 gap-4 pt-2">
+                {[
+                  { value: "4.9/5", label: "Avg Rating" },
+                  { value: "10k+", label: "Travelers" },
+                  { value: "3", label: "Countries" },
+                ].map(({ value, label }) => (
+                  <div key={label} className="border border-border bg-background p-4 text-center">
+                    <p className="text-2xl font-display font-bold text-foreground">{value}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{label}</p>
                   </div>
-                  <p className="text-sm text-foreground leading-relaxed mb-5 italic">"{t.text}"</p>
-                  <div>
-                    <p className="font-display font-bold text-sm">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Testimonials full grid */}
+      <section className="py-20 bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12"
+          >
+            <span className="text-primary font-bold text-xs uppercase tracking-widest">Verified Reviews</span>
+            <h2 className="text-4xl font-display font-bold mt-3">What Our Clients Say.</h2>
+          </motion.div>
+          <TestimonialsSection variant="grid" />
         </div>
       </section>
 
