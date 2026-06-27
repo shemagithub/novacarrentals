@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { ArrowRight, Users, Briefcase, Fuel } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 
 const vehicles = [
   {
@@ -135,6 +136,13 @@ export default function Fleet() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Availability Calendar */}
+      <section className="py-20 bg-card border-y border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AvailabilityCalendar />
         </div>
       </section>
 
