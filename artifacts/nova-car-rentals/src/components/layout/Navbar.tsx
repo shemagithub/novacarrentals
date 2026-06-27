@@ -2,21 +2,23 @@ import React from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLang } from "@/contexts/LanguageContext";
 
 export function Navbar() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const { t } = useLang();
 
   const links = [
-    { href: "/", label: "Home" },
-    { href: "/fleet", label: "Fleet" },
-    { href: "/services", label: "Services" },
-    { href: "/destinations", label: "Destinations" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
+    { href: "/", label: t("nav_home") },
+    { href: "/fleet", label: t("nav_fleet") },
+    { href: "/services", label: t("nav_services") },
+    { href: "/destinations", label: t("nav_destinations") },
+    { href: "/about", label: t("nav_about") },
+    { href: "/contact", label: t("nav_contact") },
   ];
 
-  // Close mobile menu when location changes
   React.useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location]);
@@ -31,8 +33,8 @@ export function Navbar() {
               <span className="font-display font-bold text-xl tracking-wider text-foreground">NOVACAR<span className="text-primary">.</span></span>
             </Link>
           </div>
-          
-          <div className="hidden md:flex items-center space-x-8">
+
+          <div className="hidden md:flex items-center gap-5">
             <div className="flex space-x-6">
               {links.map((link) => (
                 <Link
@@ -46,14 +48,16 @@ export function Navbar() {
                 </Link>
               ))}
             </div>
+            <LanguageSwitcher />
             <Link href="/contact">
               <Button className="font-display font-semibold uppercase tracking-wider text-xs">
-                Book Now
+                {t("nav_book")}
               </Button>
             </Link>
           </div>
 
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-2">
+            <LanguageSwitcher />
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-foreground hover:text-primary transition-colors p-2"
@@ -64,7 +68,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-card border-b border-border absolute w-full">
           <div className="px-4 pt-2 pb-6 space-y-1">
@@ -82,7 +85,7 @@ export function Navbar() {
             <div className="pt-4 px-3">
               <Link href="/contact" className="w-full">
                 <Button className="w-full font-display font-semibold uppercase tracking-wider text-sm h-12">
-                  Book Now
+                  {t("nav_book")}
                 </Button>
               </Link>
             </div>
