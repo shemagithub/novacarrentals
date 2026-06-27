@@ -555,7 +555,18 @@ const LanguageContext = createContext<LanguageContextType>({
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>(() => {
+    try {
+      const saved = localStorage.getItem("novacar_lang");
+      if (saved === "en" || saved === "fr" || saved === "sw") return saved;
+    } catch {}
+    return "en";
+  });
+
+  function persistLanguage(l: Language) {
+    try { localStorage.setItem("novacar_lang", l); } catch {}
+    setLanguage(l);
+  }
 
   function t(key: TranslationKey): string {
     const val = (translations[language] as Record<string, unknown>)[key];
@@ -566,7 +577,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: persistLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

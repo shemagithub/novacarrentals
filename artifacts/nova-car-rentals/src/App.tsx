@@ -12,6 +12,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 
 import Home from "@/pages/home";
 import Fleet from "@/pages/fleet";
+import FleetDetail from "@/pages/fleet-detail";
 import Services from "@/pages/services";
 import Destinations from "@/pages/destinations";
 import About from "@/pages/about";
@@ -24,6 +25,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/fleet" component={Fleet} />
+      <Route path="/fleet/:id" component={FleetDetail} />
       <Route path="/services" component={Services} />
       <Route path="/destinations" component={Destinations} />
       <Route path="/about" component={About} />

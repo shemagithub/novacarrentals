@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import { ArrowRight, Users, Briefcase, Fuel } from "lucide-react";
+import { ArrowRight, Users, Briefcase, Fuel, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
+import { getVehicleIdByName } from "@/lib/fleet-data";
 
 const vehicles = [
   {
@@ -120,16 +120,27 @@ export default function Fleet() {
                         <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" /> {car.bags} bags</span>
                         <span className="flex items-center gap-1"><Fuel className="w-3 h-3" /> {car.fuel}</span>
                       </div>
-                      <Link href="/contact">
-                        <Button
-                          size="sm"
-                          className="w-full font-display uppercase tracking-wider text-xs h-10 group/btn"
-                          data-testid={`button-reserve-${gi}-${i}`}
-                        >
-                          Request Vehicle
-                          <ArrowRight className="w-3 h-3 ml-2 transition-transform group-hover/btn:translate-x-1" />
-                        </Button>
-                      </Link>
+                      <div className="flex gap-2">
+                        <Link href={`/fleet/${getVehicleIdByName(car.name)}`} className="flex-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full font-display uppercase tracking-wider text-xs h-10"
+                            data-testid={`button-details-${gi}-${i}`}
+                          >
+                            <Info className="w-3 h-3 mr-1.5" /> Details
+                          </Button>
+                        </Link>
+                        <Link href="/contact" className="flex-1">
+                          <Button
+                            size="sm"
+                            className="w-full font-display uppercase tracking-wider text-xs h-10 group/btn"
+                            data-testid={`button-reserve-${gi}-${i}`}
+                          >
+                            Book <ArrowRight className="w-3 h-3 ml-1 transition-transform group-hover/btn:translate-x-1" />
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
