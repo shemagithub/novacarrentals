@@ -4,13 +4,14 @@ import { Link } from "wouter";
 import { DateRange } from "react-day-picker";
 import {
   CheckCircle2, XCircle, ArrowRight, CalendarDays,
-  Users, Fuel, ChevronRight, Info,
+  Users, Fuel, ChevronRight, Info, MessageCircle,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import {
   vehicles, bookings, isVehicleBooked, getBookedDates, categories,
 } from "@/lib/availability";
+import { useBooking } from "@/contexts/BookingContext";
 
 function formatDate(d: Date) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -27,6 +28,8 @@ export function AvailabilityCalendar() {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [category, setCategory] = useState("All");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const { setSelection } = useBooking();
 
   const bookedDates = useMemo(() => getBookedDates(), []);
 
@@ -247,15 +250,36 @@ export function AvailabilityCalendar() {
                             <span className="hidden sm:flex items-center gap-1 text-emerald-500 text-xs font-bold uppercase tracking-wider">
                               <CheckCircle2 className="w-3.5 h-3.5" /> Available
                             </span>
-                            <Link href="/contact">
+                            {selectedVehicleId === v.id ? (
+                              <button
+                                onClick={() => {
+                                  setSelectedVehicleId(null);
+                                  setSelection(null);
+                                }}
+                                data-testid={`button-selected-${v.id}`}
+                                className="h-8 px-3 text-xs font-display uppercase tracking-wider bg-emerald-600 text-white flex items-center gap-1 hover:bg-emerald-700 transition-colors"
+                              >
+                                <MessageCircle className="w-3 h-3" /> Selected
+                              </button>
+                            ) : (
                               <Button
                                 size="sm"
                                 className="h-8 px-3 text-xs font-display uppercase tracking-wider"
                                 data-testid={`button-book-${v.id}`}
+                                onClick={() => {
+                                  setSelectedVehicleId(v.id);
+                                  setSelection({
+                                    vehicleId: v.id,
+                                    vehicleName: v.name,
+                                    fromDate: range?.from?.toISOString().split("T")[0] ?? "",
+                                    toDate: range?.to?.toISOString().split("T")[0] ?? "",
+                                    pricePerDay: v.pricePerDay,
+                                  });
+                                }}
                               >
                                 Book <ChevronRight className="w-3 h-3 ml-0.5" />
                               </Button>
-                            </Link>
+                            )}
                           </>
                         ) : (
                           <span className="flex items-center gap-1 text-primary text-xs font-bold uppercase tracking-wider">

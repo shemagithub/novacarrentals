@@ -6,6 +6,8 @@ import NotFound from "@/pages/not-found";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { WhatsAppWidget } from "@/components/WhatsAppWidget";
+import { BookingProvider } from "@/contexts/BookingContext";
 
 import Home from "@/pages/home";
 import Fleet from "@/pages/fleet";
@@ -34,15 +36,18 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
-            <main className="flex-grow pt-20">
-              <Router />
-            </main>
-            <Footer />
-          </div>
-        </WouterRouter>
+        <BookingProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              <main className="flex-grow pt-20">
+                <Router />
+              </main>
+              <Footer />
+            </div>
+            <WhatsAppWidget />
+          </WouterRouter>
+        </BookingProvider>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
