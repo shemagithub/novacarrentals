@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Fonts load from public/index.html (non-import) to avoid render-blocking @import chain. */
+
+:root {
+    --bg-app: #F9F9FA;
+    --bg-surface: #FFFFFF;
+    --text-primary: #0A0A0A;
+    --text-secondary: #666666;
+    --brand-primary: #E60000;
+    --brand-hover: #CC0000;
+    --brand-accent: #FF3333;
+    --status-success: #00C853;
+    --status-warning: #FFAB00;
+    --status-error: #E60000;
+    --status-info: #2962FF;
+    --border-default: #E5E5E5;
+}
+
+body {
+    margin: 0;
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+.font-mono, code {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 98%;
+        --foreground: 0 0% 4%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 4%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 4%;
+        --primary: 0 100% 45%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 0 0% 96%;
+        --secondary-foreground: 0 0% 9%;
+        --muted: 0 0% 96%;
+        --muted-foreground: 0 0% 40%;
+        --accent: 0 0% 96%;
+        --accent-foreground: 0 0% 9%;
+        --destructive: 0 100% 45%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 0 0% 90%;
+        --input: 0 0% 90%;
+        --ring: 0 100% 45%;
+        --chart-1: 0 100% 45%;
+        --chart-2: 0 0% 20%;
+        --chart-3: 0 0% 50%;
+        --chart-4: 220 70% 50%;
+        --chart-5: 30 90% 55%;
+        --radius: 0.25rem;
+    }
+}
+
+@layer base {
+    * { @apply border-border; }
+    body { @apply bg-background text-foreground; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
+
+/* Selection */
+::selection { background: #E60000; color: #fff; }
+
+/* Glass header */
+.glass-header {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+/* Sidebar nav active */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 16px;
+    color: #525252;
+    border-left: 3px solid transparent;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+.sidebar-link:hover {
+    background: #FAFAFA;
+    color: #0A0A0A;
+}
+.sidebar-link.active {
+    background: #FFF5F5;
+    color: #E60000;
+    border-left-color: #E60000;
+    font-weight: 600;
+}
+
+/* Stagger entrance */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.4s ease-out forwards; }
+
+/* Sharp card */
+.sharp-card {
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 4px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sharp-card:hover {
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+
+[data-debug-wrapper="true"] {
+    display: contents !important;
+}
+
+/* Toasts above admin modals (ResourcePage / Radix use z-[6000]) */
+[data-sonner-toaster] {
+    z-index: 6500 !important;
+}

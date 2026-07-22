@@ -47,3 +47,22 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Env / secrets (keep examples only)
+.env
+.env.local
+.env.*.local
+.env.production
+backend/.env
+backend/*Copy.env
+backend/ - Copy.env
+frontend/.env
+frontend/.env.local
+
+# Python
+backend/__pycache__/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/

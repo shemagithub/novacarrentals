@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Dynamic sitemap (all pages, vehicles, guides, blog posts)
+# Live version: /api/public/robots.txt
+Sitemap: https://novacarrentals.com/api/public/sitemap.xml
