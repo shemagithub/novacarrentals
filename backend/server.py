@@ -3,6 +3,7 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent
 LOCAL_UPLOAD_ROOT = ROOT_DIR / "local_uploads"
+IMAGE_CACHE_DIR = LOCAL_UPLOAD_ROOT / ".imgcache"
 load_dotenv(ROOT_DIR / '.env')
 
 import base64
@@ -78,6 +79,7 @@ def _missing_a2wsgi_wsgi_handler(environ, start_response):
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.cors import CORSMiddleware
 import aiomysql
+from image_optimize import compress_uploaded_image, prepare_public_image
 from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 import requests
 
@@ -155,6 +157,8 @@ _CORS_DEV_ORIGINS = (
     "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
     "https://admin.novacarrentals.com",
@@ -1898,6 +1902,31 @@ def fetch_file_bytes(storage_path: str) -> Tuple[bytes, str]:
     return get_object(storage_path)
 
 
+_PUBLIC_IMAGE_CACHE_HEADERS = {
+    "Cache-Control": "public, max-age=2592000, stale-while-revalidate=86400",
+}
+
+
+def _public_image_response(
+    data: bytes,
+    content_type: str,
+    *,
+    storage_path: str = "",
+    width: Optional[int] = None,
+) -> Response:
+    """Compress/resize public images and send long-lived cache headers."""
+    ct = (content_type or "").split(";")[0].strip() or "application/octet-stream"
+    if ct.startswith("image/") and ct not in ("image/gif", "image/svg+xml"):
+        data, ct = prepare_public_image(
+            data,
+            ct,
+            storage_path=storage_path,
+            width=width,
+            cache_dir=IMAGE_CACHE_DIR,
+        )
+    return Response(content=data, media_type=ct, headers=_PUBLIC_IMAGE_CACHE_HEADERS)
+
+
 def init_storage() -> Optional[str]:
     global storage_key
     if storage_key:
@@ -1972,6 +2001,8 @@ async def upload_file(
     if ct not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(status_code=415, detail=f"Content type '{ct}' not allowed")
     ext = (file.filename or "file.bin").rsplit(".", 1)[-1].lower() if "." in (file.filename or "") else "bin"
+    if ct.startswith("image/") and ct != "image/gif":
+        content, ct, ext = compress_uploaded_image(content, ct)
     safe_folder = folder.strip("/").replace("..", "")
     path = f"{APP_NAME}/{safe_folder}/{uuid.uuid4()}.{ext}"
     file_id = str(uuid.uuid4())
@@ -2609,7 +2640,9 @@ def _blog_cover_public_url(raw: Any, request: Request) -> Optional[str]:
 
 
 @api_router.get("/public/branding-asset")
-async def public_branding_asset():
+async def public_branding_asset(
+    w: Optional[int] = Query(None, ge=100, le=1920, description="Max image width for compressed delivery"),
+):
     """Serve uploaded company logo without auth (path allowlist: carrental/branding/*). External URLs redirect."""
     doc = await _effective_settings_doc()
     logo = (doc.get("logo_url") or "").strip()
@@ -2624,11 +2657,16 @@ async def public_branding_asset():
     if not record:
         raise HTTPException(status_code=404, detail="Logo file not found")
     data, ct = fetch_file_bytes(path)
-    return Response(content=data, media_type=record.get("content_type", ct or "application/octet-stream"))
+    return _public_image_response(
+        data, record.get("content_type", ct or "application/octet-stream"), storage_path=path, width=w
+    )
 
 
 @api_router.get("/public/team-asset")
-async def public_team_asset(path: str = Query(..., min_length=3, max_length=512, description="Storage path under carrental/team/")):
+async def public_team_asset(
+    path: str = Query(..., min_length=3, max_length=512, description="Storage path under carrental/team/"),
+    w: Optional[int] = Query(None, ge=100, le=1920, description="Max image width for compressed delivery"),
+):
     """Serve team member photos without auth (allowlist: carrental/team/* only)."""
     storage = _resolved_team_photo_storage_path(path)
     if not storage:
@@ -2637,11 +2675,16 @@ async def public_team_asset(path: str = Query(..., min_length=3, max_length=512,
     if not record:
         raise HTTPException(status_code=404, detail="Team image not found")
     data, ct = fetch_file_bytes(storage)
-    return Response(content=data, media_type=record.get("content_type", ct or "application/octet-stream"))
+    return _public_image_response(
+        data, record.get("content_type", ct or "application/octet-stream"), storage_path=storage, width=w
+    )
 
 
 @api_router.get("/public/blog-asset")
-async def public_blog_asset(path: str = Query(..., min_length=10, max_length=512, description="Storage path under carrental/blogs/")):
+async def public_blog_asset(
+    path: str = Query(..., min_length=10, max_length=512, description="Storage path under carrental/blogs/"),
+    w: Optional[int] = Query(None, ge=100, le=1920, description="Max image width for compressed delivery"),
+):
     """Serve blog cover images without auth (allowlist: carrental/blogs/* only)."""
     storage = _resolved_blog_cover_storage_path(path)
     if not storage:
@@ -2650,12 +2693,15 @@ async def public_blog_asset(path: str = Query(..., min_length=10, max_length=512
     if not record:
         raise HTTPException(status_code=404, detail="Blog image not found")
     data, ct = fetch_file_bytes(storage)
-    return Response(content=data, media_type=record.get("content_type", ct or "application/octet-stream"))
+    return _public_image_response(
+        data, record.get("content_type", ct or "application/octet-stream"), storage_path=storage, width=w
+    )
 
 
 @api_router.get("/public/testimonial-asset")
 async def public_testimonial_asset(
     path: str = Query(..., min_length=10, max_length=512, description="Storage path under carrental/testimonials/"),
+    w: Optional[int] = Query(None, ge=100, le=1920, description="Max image width for compressed delivery"),
 ):
     """Serve testimonial profile images without auth (allowlist: carrental/testimonials/* only)."""
     storage = _resolved_testimonial_profile_storage_path(path)
@@ -2665,12 +2711,15 @@ async def public_testimonial_asset(
     if not record:
         raise HTTPException(status_code=404, detail="Testimonial image not found")
     data, ct = fetch_file_bytes(storage)
-    return Response(content=data, media_type=record.get("content_type", ct or "application/octet-stream"))
+    return _public_image_response(
+        data, record.get("content_type", ct or "application/octet-stream"), storage_path=storage, width=w
+    )
 
 
 @api_router.get("/public/cms-asset")
 async def public_cms_asset(
     path: str = Query(..., min_length=10, max_length=512, description="Storage path under carrental/cms/"),
+    w: Optional[int] = Query(None, ge=100, le=1920, description="Max image width for compressed delivery"),
 ):
     """Serve CMS page images without auth (allowlist: carrental/cms/* only)."""
     storage = _resolved_cms_about_image_storage_path(path)
@@ -2680,12 +2729,15 @@ async def public_cms_asset(
     if not record:
         raise HTTPException(status_code=404, detail="CMS image not found")
     data, ct = fetch_file_bytes(storage)
-    return Response(content=data, media_type=record.get("content_type", ct or "application/octet-stream"))
+    return _public_image_response(
+        data, record.get("content_type", ct or "application/octet-stream"), storage_path=storage, width=w
+    )
 
 
 @api_router.get("/public/guide-asset")
 async def public_guide_asset(
     path: str = Query(..., min_length=10, max_length=512, description="Storage path under carrental/guides/"),
+    w: Optional[int] = Query(None, ge=100, le=1920, description="Max image width for compressed delivery"),
 ):
     """Serve travel guide cover images without auth (allowlist: carrental/guides/* only)."""
     storage = _resolved_travel_guide_cover_storage_path(path)
@@ -2695,7 +2747,9 @@ async def public_guide_asset(
     if not record:
         raise HTTPException(status_code=404, detail="Guide image not found")
     data, ct = fetch_file_bytes(storage)
-    return Response(content=data, media_type=record.get("content_type", ct or "application/octet-stream"))
+    return _public_image_response(
+        data, record.get("content_type", ct or "application/octet-stream"), storage_path=storage, width=w
+    )
 
 
 @api_router.get("/public/cms-page/{page_key}")
@@ -3451,6 +3505,7 @@ async def public_vehicle_asset(
         max_length=512,
         description="Storage path like {app}/vehicles/... (must match public allowlist).",
     ),
+    w: Optional[int] = Query(None, ge=100, le=1920, description="Max image width for compressed delivery"),
 ):
     """Serve vehicle marketing images without auth (allowlist: `{slug}/vehicles/*` storage keys)."""
     storage = _resolved_vehicle_public_storage_path(path)
@@ -3459,9 +3514,8 @@ async def public_vehicle_asset(
     record = await mysql_file_find_by_path(storage)
     if record:
         data, ct = fetch_file_bytes(storage)
-        return Response(
-            content=data,
-            media_type=record.get("content_type", ct or "application/octet-stream"),
+        return _public_image_response(
+            data, record.get("content_type", ct or "application/octet-stream"), storage_path=storage, width=w
         )
     # File may exist on disk (or object storage) even if the `files` row is missing — still allowlisted.
     try:
@@ -3481,7 +3535,7 @@ async def public_vehicle_asset(
             "webp": "image/webp",
             "gif": "image/gif",
         }.get(ext, mt)
-    return Response(content=data, media_type=mt)
+    return _public_image_response(data, mt, storage_path=storage, width=w)
 
 
 def _branch_display_map(br_list: List[Dict[str, Any]]) -> Dict[str, str]:

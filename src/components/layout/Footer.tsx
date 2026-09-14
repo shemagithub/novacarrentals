@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Compass, Mail, Phone, MapPin, Instagram, Facebook, Twitter } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import {
   brandingEmail,
   brandingFooterTagline,
@@ -52,9 +53,11 @@ export function Footer() {
               {loading && !logoSrc ? (
                 <div className="h-10 w-10 rounded-sm bg-muted animate-pulse shrink-0" aria-hidden />
               ) : logoSrc ? (
-                <img
+                <OptimizedImage
                   src={logoSrc}
                   alt={displayName}
+                  width={400}
+                  sizes="160px"
                   className="h-10 w-auto max-w-[160px] object-contain shrink-0"
                 />
               ) : (

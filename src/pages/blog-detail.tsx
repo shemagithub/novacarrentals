@@ -18,6 +18,7 @@ import { articleJsonLd } from "@/lib/json-ld";
 import { absoluteAssetUrl, getMarketingSiteOrigin } from "@/lib/site-url";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 function formatDate(iso: string | null | undefined) {
   if (!iso) return "";
@@ -118,9 +119,12 @@ export default function BlogDetail() {
         {post.cover_image_url ? (
           <>
             <div className="absolute inset-0 max-h-[520px] overflow-hidden">
-              <img
+              <OptimizedImage
                 src={post.cover_image_url}
                 alt=""
+                width={1600}
+                sizes="100vw"
+                priority
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30" />

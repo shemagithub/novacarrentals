@@ -1,0 +1,13 @@
+NOVACAR — cPanel upload
+=======================
+
+1. In cPanel → File Manager, open public_html (the folder for novacarrentals.com).
+2. Upload this zip, then Extract it INTO public_html (not into a subfolder).
+   You should see index.html and an assets/ folder next to each other.
+3. Overwrite old files when asked.
+4. Visit https://novacarrentals.com and hard-refresh (Cmd-Shift-R / Ctrl-Shift-R).
+
+This build calls the live API at:
+  https://backend.novacarrentals.com/api
+
+Do not delete .htaccess — it makes /fleet, /guides, and other pages work on refresh.

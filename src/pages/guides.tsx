@@ -12,6 +12,7 @@ import {
 } from "@/lib/guides-api";
 import { fetchPublicCmsPage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { useCmsPageSeo } from "@/hooks/useCmsPageSeo";
 
 const categoryColors: Record<string, string> = {
@@ -32,7 +33,7 @@ function GuideThumb({ guide, className }: { guide: DisplayGuide; className?: str
     <div className={`relative overflow-hidden bg-muted ${className ?? ""}`}>
       {thumb ? (
         <>
-          <img src={thumb} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+          <OptimizedImage src={thumb} alt="" width={800} sizes="(max-width: 768px) 100vw, 50vw" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/35" />
         </>
       ) : (

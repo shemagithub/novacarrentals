@@ -1,6 +1,6 @@
 import { API_BASE } from "@/lib/api";
 import { cleanDisplayText } from "@/lib/display-text";
-import { formatMoney, formatRatePerDay, type Currency } from "@/lib/formatMoney";
+import { type Currency } from "@/lib/formatMoney";
 
 export interface PublicVehicleSummary {
   id: string;
@@ -160,7 +160,7 @@ function idealForFromCategory(category: string): string[] {
 
 export function mapVehicleToDisplay(
   v: PublicVehicleSummary | PublicVehicleDetail,
-  currency: Currency = "USD",
+  _currency: Currency = "USD",
 ): VehicleDisplay {
   const detail = v as PublicVehicleDetail;
   const name = cleanDisplayText(v.name);
@@ -197,7 +197,7 @@ export function mapVehicleToDisplay(
   const notIncluded = [
     detail.fuel_policy?.toLowerCase().includes("full") ? null : "Fuel",
     detail.driver_fee
-      ? `Professional driver (optional +${formatRatePerDay(detail.driver_fee, currency)})`
+      ? "Professional driver (optional, rate negotiable)"
       : "Driver (optional add on)",
     "Border crossing fees (where applicable)",
     detail.pets_policy ? `Pets: ${detail.pets_policy}` : null,
@@ -265,16 +265,12 @@ export function groupVehiclesByCategory(vehicles: VehicleDisplay[]): { category:
 
 export type FleetSortKey =
   | "category"
-  | "price-asc"
-  | "price-desc"
   | "name-asc"
   | "name-desc"
   | "seats-desc";
 
 export const FLEET_SORT_OPTIONS: { value: FleetSortKey; label: string }[] = [
   { value: "name-asc", label: "Name: A to Z" },
-  { value: "price-asc", label: "Price: low to high" },
-  { value: "price-desc", label: "Price: high to low" },
   { value: "category", label: "Category: A to Z" },
   { value: "name-desc", label: "Name: Z to A" },
   { value: "seats-desc", label: "Most seats" },
@@ -283,10 +279,6 @@ export const FLEET_SORT_OPTIONS: { value: FleetSortKey; label: string }[] = [
 export function sortFleetVehicles(vehicles: VehicleDisplay[], sort: FleetSortKey): VehicleDisplay[] {
   const copy = [...vehicles];
   switch (sort) {
-    case "price-asc":
-      return copy.sort((a, b) => a.pricePerDay - b.pricePerDay || a.name.localeCompare(b.name));
-    case "price-desc":
-      return copy.sort((a, b) => b.pricePerDay - a.pricePerDay || a.name.localeCompare(b.name));
     case "name-desc":
       return copy.sort((a, b) => b.name.localeCompare(a.name));
     case "seats-desc":

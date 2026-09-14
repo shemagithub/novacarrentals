@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Shield, Heart, Globe, Zap, CheckCircle2, ArrowRight, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestimonialsSection } from "@/components/Testimonials";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { fetchPublicCmsPage, type PublicCmsPage } from "@/lib/api";
 import { useCmsPageSeo } from "@/hooks/useCmsPageSeo";
@@ -45,7 +46,7 @@ function StoryCollageImage({
   return (
     <div className={`${className} overflow-hidden flex items-center justify-center`}>
       {url ? (
-        <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+        <OptimizedImage src={url} alt="" width={800} sizes="(max-width: 768px) 100vw, 33vw" className="w-full h-full object-cover" />
       ) : (
         <span className={`text-6xl font-display font-bold ${fallbackClassName}`}>{fallback}</span>
       )}

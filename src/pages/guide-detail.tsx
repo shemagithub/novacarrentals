@@ -17,12 +17,13 @@ import {
 } from "@/lib/guides-api";
 import { FLEET_QUERY_KEY, fetchPublicVehicles, mapVehicleToDisplay } from "@/lib/fleet-api";
 import { useDynamicPageSeo } from "@/hooks/useDynamicPageSeo";
-import { useFormatMoney } from "@/hooks/useFormatMoney";
 import { truncateDescription } from "@/lib/seo";
 import { articleJsonLd } from "@/lib/json-ld";
 import { absoluteAssetUrl, getMarketingSiteOrigin } from "@/lib/site-url";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 function RichBlock({ content, className }: { content: string; className?: string }) {
   if (isGuideHtml(content)) {
@@ -39,7 +40,7 @@ function RichBlock({ content, className }: { content: string; className?: string
 export default function GuideDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { branding, currency } = useSiteSettings();
-  const { formatRatePerDay } = useFormatMoney();
+  const { t } = useLang();
 
   const {
     data: apiGuide,
@@ -166,7 +167,7 @@ export default function GuideDetail() {
       <section className={`relative bg-gradient-to-br ${guide.coverGradient} py-24 overflow-hidden`}>
         {coverImage ? (
           <>
-            <img src={coverImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <OptimizedImage src={coverImage} alt="" width={1600} sizes="100vw" priority className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/55" />
           </>
         ) : (
@@ -266,7 +267,7 @@ export default function GuideDetail() {
               >
                 {galleryUrls.map((url) => (
                   <div key={url} className="aspect-[4/3] overflow-hidden border border-border bg-card">
-                    <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <OptimizedImage src={url} alt="" width={640} sizes="(max-width: 768px) 50vw, 33vw" className="w-full h-full object-cover" />
                   </div>
                 ))}
               </motion.div>
@@ -297,7 +298,7 @@ export default function GuideDetail() {
                       }`}
                     >
                       <div className="overflow-hidden border border-border aspect-video lg:[direction:ltr]">
-                        <img src={section.imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        <OptimizedImage src={section.imageUrl} alt="" width={1024} sizes="(max-width: 1024px) 100vw, 50vw" className="w-full h-full object-cover" />
                       </div>
                       <div className="lg:[direction:ltr] space-y-4">
                         <RichBlock content={section.body} className="text-muted-foreground leading-relaxed text-[15px]" />
@@ -378,25 +379,21 @@ export default function GuideDetail() {
                   {guide.recommendedVehicles.map((rec) => {
                     const vehicle = fleet.find((v) => v.id === rec.id);
                     const displayName = vehicle?.name || rec.name;
-                    const rate =
-                      vehicle?.pricePerDay ??
-                      (rec.dailyRate != null && rec.dailyRate > 0 ? rec.dailyRate : null);
                     return (
                       <div key={`${rec.id}-${rec.name}`} className="p-5">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <p className="font-display font-bold text-sm text-foreground leading-snug">{displayName}</p>
-                          {rate != null ? (
-                            <span className="text-xs font-bold text-primary shrink-0">
-                              {formatRatePerDay(rate)}
-                            </span>
-                          ) : null}
+                          <span className="text-xs font-bold text-primary shrink-0 uppercase tracking-wider">
+                            {t("fleet_negotiable")}
+                          </span>
                         </div>
                         {vehicle?.imageUrl ? (
-                          <img
+                          <OptimizedImage
                             src={vehicle.imageUrl}
                             alt=""
+                            width={640}
+                            sizes="(max-width: 1024px) 100vw, 320px"
                             className="w-full h-28 object-cover border border-border mb-3"
-                            loading="lazy"
                           />
                         ) : null}
                         <p className="text-xs text-muted-foreground leading-relaxed mb-3">{rec.reason}</p>

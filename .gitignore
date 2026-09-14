@@ -5,6 +5,7 @@ dist
 tmp
 out-tsc
 *.tsbuildinfo
+novacar-frontend-cpanel.zip
 .expo
 .expo-shared
 
@@ -61,6 +62,7 @@ frontend/.env.local
 
 # Python
 backend/__pycache__/
+backend/local_uploads/.imgcache/
 **/__pycache__/
 *.py[cod]
 *.egg-info/

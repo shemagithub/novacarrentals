@@ -4,10 +4,12 @@ import { motion } from "framer-motion";
 import { Link, useParams } from "wouter";
 import {
   ArrowLeft, ArrowRight, Users, Briefcase, Fuel, Zap,
-  CheckCircle2, CalendarDays, Phone, Shield,
-  Gauge, Car, Star, Clock, CarFront,
+  CheckCircle2, Phone, Shield,
+  Gauge, Car, Star, Clock, CarFront, MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import { NegotiablePriceBadge } from "@/components/NegotiablePriceBadge";
 import {
   FLEET_QUERY_KEY,
   fetchPublicVehicleById,
@@ -16,7 +18,7 @@ import {
   mapVehicleToDisplay,
 } from "@/lib/fleet-api";
 import { useDynamicPageSeo } from "@/hooks/useDynamicPageSeo";
-import { useFormatMoney } from "@/hooks/useFormatMoney";
+import { useLang } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { vehicleProductJsonLd } from "@/lib/json-ld";
 import { absoluteAssetUrl, getMarketingSiteOrigin } from "@/lib/site-url";
@@ -42,19 +44,20 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function FleetDetail() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLang();
   const { siteName, globalSeo, branding, currency } = useSiteSettings();
-  const { formatMoney, formatRatePerDay } = useFormatMoney();
-  const defaultDriverRate = 30;
 
   const { data: raw, isLoading, isError } = useQuery({
     queryKey: fleetVehicleQueryKey(id ?? ""),
     queryFn: () => fetchPublicVehicleById(id ?? ""),
     enabled: Boolean(id),
+    staleTime: 60_000,
   });
 
   const { data: allRaw = [] } = useQuery({
     queryKey: FLEET_QUERY_KEY,
     queryFn: () => fetchPublicVehicles(100),
+    staleTime: 60_000,
   });
 
   const vehicle = raw ? mapVehicleToDisplay(raw, currency) : null;
@@ -78,14 +81,12 @@ export default function FleetDetail() {
         name: vehicle.name,
         description: vehicle.description,
         image: vehicle.imageUrl ? absoluteAssetUrl(origin, vehicle.imageUrl) : null,
-        pricePerDay: vehicle.pricePerDay,
         category: vehicle.category,
         origin,
         path: `/fleet/${vehicle.id}`,
-        priceCurrency: currency,
       }),
     };
-  }, [vehicle, siteName, globalSeo, branding, currency]);
+  }, [vehicle, siteName, globalSeo, branding]);
 
   useDynamicPageSeo(pageSeo);
 
@@ -148,9 +149,12 @@ export default function FleetDetail() {
             <motion.div {...fadeUp()} className="relative">
               <div className="aspect-[16/9] bg-gradient-to-br from-muted via-muted to-background/60 border border-border flex items-center justify-center relative overflow-hidden">
                 {heroImage ? (
-                  <img
+                  <OptimizedImage
                     src={heroImage}
                     alt={vehicle.name}
+                    width={1280}
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    priority
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 ) : (
@@ -167,12 +171,7 @@ export default function FleetDetail() {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent pointer-events-none" />
 
                 {/* Price badge */}
-                <div className="absolute bottom-6 left-6 bg-background/95 backdrop-blur border border-border px-5 py-3">
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest mb-0.5">From</p>
-                  <p className="text-3xl font-display font-bold text-foreground">
-                    {formatRatePerDay(vehicle.pricePerDay)}
-                  </p>
-                </div>
+                <NegotiablePriceBadge variant="hero" />
 
                 {/* Badge */}
                 {vehicle.badge && (
@@ -195,7 +194,7 @@ export default function FleetDetail() {
                 <div className="grid grid-cols-4 gap-1 mt-1">
                   {vehicle.galleryImages.slice(0, 4).map((url) => (
                     <div key={url} className="aspect-[4/3] bg-muted border border-border overflow-hidden">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <OptimizedImage src={url} alt="" width={400} sizes="25vw" className="w-full h-full object-cover" />
                     </div>
                   ))}
                 </div>
@@ -236,39 +235,17 @@ export default function FleetDetail() {
                 {vehicle.description}
               </p>
 
-              {/* Pricing tiers */}
+              {/* Pricing */}
               <div className="border border-border">
                 <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/30">
-                  <CalendarDays className="w-4 h-4 text-primary" />
-                  <p className="text-xs font-bold uppercase tracking-widest text-foreground">Pricing</p>
+                  <MessageCircle className="w-4 h-4 text-primary" />
+                  <p className="text-xs font-bold uppercase tracking-widest text-foreground">{t("fleet_price_label")}</p>
                 </div>
-                <div className="divide-y divide-border">
-                  <div className="flex justify-between items-center px-4 py-3">
-                    <span className="text-sm text-muted-foreground">Daily rate</span>
-                    <span className="font-display font-bold text-foreground">{formatRatePerDay(vehicle.pricePerDay)}</span>
+                <div className="px-4 py-4 flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-display font-bold text-foreground">{t("fleet_negotiable")}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("fleet_quote_hint")}</p>
                   </div>
-                  {vehicle.priceWeekly && vehicle.priceWeekly > 0 && (
-                    <div className="flex justify-between items-center px-4 py-3">
-                      <span className="text-sm text-muted-foreground">Weekly (7 days)</span>
-                      <div className="text-right">
-                        <span className="font-display font-bold text-foreground">{formatMoney(vehicle.priceWeekly)}</span>
-                        <span className="text-xs text-emerald-500 ml-2">
-                          Save {formatMoney(vehicle.pricePerDay * 7 - vehicle.priceWeekly!)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {vehicle.priceMonthly && vehicle.priceMonthly > 0 && (
-                    <div className="flex justify-between items-center px-4 py-3">
-                      <span className="text-sm text-muted-foreground">Monthly (30 days)</span>
-                      <div className="text-right">
-                        <span className="font-display font-bold text-foreground">{formatMoney(vehicle.priceMonthly)}</span>
-                        <span className="text-xs text-emerald-500 ml-2">
-                          Save {formatMoney(vehicle.pricePerDay * 30 - vehicle.priceMonthly!)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -362,9 +339,7 @@ export default function FleetDetail() {
                   <p className="text-sm font-bold text-foreground">Add a Professional Driver</p>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  {vehicle.driverFee
-                    ? `Add a professional driver for +${formatRatePerDay(vehicle.driverFee)}. English, French, Kinyarwanda, and Swahili speakers available.`
-                    : `All vehicles can be hired with a professional, multilingual driver for +${formatRatePerDay(defaultDriverRate)}. English, French, Kinyarwanda, and Swahili speakers available.`}
+                  All vehicles can be hired with a professional, multilingual driver — rate is negotiable. English, French, Kinyarwanda, and Swahili speakers available.
                 </p>
               </div>
             </div>
@@ -442,13 +417,17 @@ export default function FleetDetail() {
                 >
                   <div className="aspect-[4/3] bg-muted relative flex items-center justify-center overflow-hidden">
                     {v.imageUrl ? (
-                      <img src={v.imageUrl} alt={v.name} className="absolute inset-0 w-full h-full object-cover" />
+                      <OptimizedImage
+                        src={v.imageUrl}
+                        alt={v.name}
+                        width={640}
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
                     ) : (
                       <CarFront className="w-12 h-12 text-muted-foreground/20" />
                     )}
-                    <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur px-3 py-1 text-sm font-bold">
-                      {formatRatePerDay(v.pricePerDay)}
-                    </div>
+                    <NegotiablePriceBadge />
                     {v.badge && (
                       <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 uppercase tracking-wider">
                         {v.badge}

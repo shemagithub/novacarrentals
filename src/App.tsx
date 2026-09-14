@@ -26,7 +26,15 @@ const Blogs = lazy(() => import("@/pages/blogs"));
 const BlogDetail = lazy(() => import("@/pages/blog-detail"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function PageLoader() {
   return (

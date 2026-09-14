@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { ArrowRight, Users, Briefcase, Fuel, Info, CarFront, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import { NegotiablePriceBadge } from "@/components/NegotiablePriceBadge";
 import {
   Select,
   SelectContent,
@@ -29,28 +31,28 @@ import { cleanDisplayText } from "@/lib/display-text";
 function VehicleCard({
   car,
   index,
-  formatRatePerDay,
 }: {
   car: VehicleDisplay;
   index: number;
-  formatRatePerDay: (amount: number) => string;
 }) {
   const isAvailable = car.status.toLowerCase() === "available";
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: (index % 8) * 0.05 }}
+      transition={{ delay: Math.min(index, 7) * 0.03 }}
       data-testid={`card-vehicle-${car.id}`}
       className="group bg-card border border-border hover:border-primary/50 transition-all duration-300 overflow-hidden flex flex-col"
     >
       <div className="aspect-[4/3] bg-muted relative overflow-hidden">
         {car.imageUrl ? (
-          <img
+          <OptimizedImage
             src={car.imageUrl}
             alt={car.name}
+            width={640}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
@@ -59,9 +61,7 @@ function VehicleCard({
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur px-3 py-1 text-sm font-bold">
-          From {formatRatePerDay(car.pricePerDay)}
-        </div>
+        <NegotiablePriceBadge />
         {(car.badge || car.tags[0]) && (
           <div className="absolute top-3 left-3 flex flex-wrap gap-1">
             <span
@@ -192,7 +192,7 @@ export default function Fleet() {
     description: "Browse safari 4x4s, executive sedans, and group vans for rent across East Africa.",
   });
 
-  const { currency, formatRatePerDay } = useFormatMoney();
+  const { currency } = useFormatMoney();
 
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [sort, setSort] = useState<FleetSortKey>("name-asc");
@@ -200,6 +200,7 @@ export default function Fleet() {
   const { data: raw = [], isLoading, isError } = useQuery({
     queryKey: FLEET_QUERY_KEY,
     queryFn: () => fetchPublicVehicles(100),
+    staleTime: 60_000,
   });
 
   const { data: categoryRows = [] } = useQuery({
@@ -302,7 +303,7 @@ export default function Fleet() {
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {displayed.map((car, i) => (
-                    <VehicleCard key={car.id} car={car} index={i} formatRatePerDay={formatRatePerDay} />
+                    <VehicleCard key={car.id} car={car} index={i} />
                   ))}
                 </div>
               )}

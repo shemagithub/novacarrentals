@@ -116,15 +116,12 @@ export function vehicleProductJsonLd(input: {
   name: string;
   description: string;
   image?: string | null;
-  pricePerDay: number;
   category?: string;
   origin: string;
   path: string;
   brand?: string;
-  priceCurrency?: string;
 }) {
   const url = absoluteMarketingUrl(input.origin, input.path);
-  const priceCurrency = "USD";
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -136,11 +133,10 @@ export function vehicleProductJsonLd(input: {
     offers: {
       "@type": "Offer",
       url,
-      priceCurrency,
-      price: input.pricePerDay,
-      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      priceCurrency: "USD",
       availability: "https://schema.org/InStock",
       itemCondition: "https://schema.org/UsedCondition",
+      description: "Price negotiable",
     },
   };
 }

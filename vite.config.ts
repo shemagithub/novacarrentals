@@ -45,6 +45,7 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
   },
   root: path.resolve(import.meta.dirname),
+  envDir: path.resolve(import.meta.dirname),
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
@@ -53,8 +54,14 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes("node_modules")) return;
 
-          if (id.includes("react-dom") || /\/react\//.test(id)) return "react-vendor";
-          if (id.includes("@radix-ui")) return "radix-vendor";
+          // Keep React + Radix in ONE chunk. Splitting them created a circular
+          // radix-vendor ↔ react-vendor bundle so React.forwardRef was undefined.
+          if (
+            id.includes("@radix-ui") ||
+            /(?:^|[\\/])(?:react|react-dom|scheduler)(?:[\\/]|$)/.test(id)
+          ) {
+            return "react-vendor";
+          }
           if (id.includes("framer-motion")) return "motion-vendor";
           if (id.includes("@tanstack")) return "query-vendor";
           if (id.includes("lucide-react")) return "icons-vendor";
@@ -76,6 +83,7 @@ export default defineConfig({
       "/api": {
         target: apiProxyTarget.replace(/\/$/, ""),
         changeOrigin: true,
+        secure: true,
       },
     },
   },

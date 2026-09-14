@@ -3,14 +3,17 @@ function trimBackendUrl(raw: string | undefined): string {
   return raw.trim().replace(/\/$/, "");
 }
 
+const LIVE_BACKEND = "https://backend.novacarrentals.com";
+
 /**
  * Marketing site API origin.
- * - Set VITE_BACKEND_URL in .env (e.g. https://backend.novacarrentals.com) for direct calls.
- * - Leave empty in dev to use Vite proxy → /api (see vite.config.ts).
+ * Always uses the live API unless VITE_BACKEND_URL overrides it.
+ * Required for cPanel static hosting (there is no same-origin /api there).
  */
-const BACKEND_URL = trimBackendUrl(import.meta.env.VITE_BACKEND_URL as string | undefined);
+const BACKEND_URL =
+  trimBackendUrl(import.meta.env.VITE_BACKEND_URL as string | undefined) || LIVE_BACKEND;
 
-export const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : "/api";
+export const API_BASE = `${BACKEND_URL}/api`;
 
 export interface PublicBrandingSeo {
   title: string;

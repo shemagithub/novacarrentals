@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Menu, X, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { useLang } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
@@ -37,9 +38,12 @@ export function Navbar() {
               {loading && !logoSrc ? (
                 <div className="h-10 w-10 rounded-sm bg-muted animate-pulse shrink-0" aria-hidden />
               ) : logoSrc ? (
-                <img
+                <OptimizedImage
                   src={logoSrc}
                   alt={displayName}
+                  width={400}
+                  sizes="160px"
+                  priority
                   className="h-10 w-auto max-w-[160px] object-contain shrink-0"
                 />
               ) : (

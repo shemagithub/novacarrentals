@@ -45,6 +45,10 @@ export const translations = {
     fleet_reserve: "Reserve Now",
     fleet_from: "From",
     fleet_day: "/day",
+    fleet_negotiable: "Negotiable Price",
+    fleet_negotiable_short: "Negotiable",
+    fleet_price_label: "Price",
+    fleet_quote_hint: "Enquire for a tailored quote",
 
     // Destinations
     dest_label: "Destinations",
@@ -230,6 +234,10 @@ export const translations = {
     fleet_reserve: "Réserver",
     fleet_from: "À partir de",
     fleet_day: "/jour",
+    fleet_negotiable: "Prix négociable",
+    fleet_negotiable_short: "Négociable",
+    fleet_price_label: "Prix",
+    fleet_quote_hint: "Demandez un devis sur mesure",
 
     dest_label: "Destinations",
     dest_headline: "Une Région. Des Possibilités Infinies.",
@@ -404,6 +412,10 @@ export const translations = {
     fleet_reserve: "Hifadhi Sasa",
     fleet_from: "Kuanzia",
     fleet_day: "/siku",
+    fleet_negotiable: "Bei inayojadiliwa",
+    fleet_negotiable_short: "Inajadiliwa",
+    fleet_price_label: "Bei",
+    fleet_quote_hint: "Wasiliana kwa bei maalum",
 
     dest_label: "Maeneo",
     dest_headline: "Mkoa Mmoja. Uwezekano Usio na Mwisho.",

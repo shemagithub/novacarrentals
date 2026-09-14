@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { MapPin, ArrowRight, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import {
   DESTINATIONS_QUERY_KEY,
   fetchPublicDestinationsPage,
@@ -197,11 +198,12 @@ export default function Destinations() {
                     >
                       {country.coverImageUrl ? (
                         <>
-                          <img
+                          <OptimizedImage
                             src={country.coverImageUrl}
                             alt=""
+                            width={1024}
+                            sizes="(max-width: 1024px) 100vw, 40vw"
                             className="absolute inset-0 w-full h-full object-cover"
-                            loading="lazy"
                           />
                           <div className="absolute inset-0 bg-black/50" />
                         </>

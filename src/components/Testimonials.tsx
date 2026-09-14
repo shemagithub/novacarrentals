@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Star, Quote, Loader2 } from "lucide-react";
 import { fetchPublicTestimonials, type PublicTestimonial } from "@/lib/api";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 export const TESTIMONIALS_QUERY_KEY = ["public-testimonials"] as const;
 
@@ -79,9 +80,10 @@ function ReviewCard({ review, compact = false }: { review: Review; compact?: boo
 
       <div className="flex items-center gap-3 pt-4 border-t border-border">
         {review.profileImageUrl ? (
-          <img
+          <OptimizedImage
             src={review.profileImageUrl}
             alt=""
+            width={400}
             className="w-9 h-9 rounded-full object-cover shrink-0 border border-border"
           />
         ) : (

@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { ArrowRight, Calendar, Clock, PenLine, User } from "lucide-react";
 import { fetchPublicBlogs, type PublicBlogSummary } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { useCmsPageSeo } from "@/hooks/useCmsPageSeo";
 
 const categoryStyles: Record<string, string> = {
@@ -53,9 +54,11 @@ function BlogCard({
           <div className="group grid lg:grid-cols-2 gap-0 bg-card border border-border hover:border-primary/40 transition-colors overflow-hidden cursor-pointer">
             <div className="relative min-h-[280px] lg:min-h-[420px] bg-muted overflow-hidden">
               {post.cover_image_url ? (
-                <img
+                <OptimizedImage
                   src={post.cover_image_url}
                   alt=""
+                  width={1280}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
               ) : (
@@ -106,9 +109,11 @@ function BlogCard({
         <div className="group h-full flex flex-col bg-card border border-border hover:border-primary/50 transition-all duration-300 overflow-hidden cursor-pointer">
           <div className="relative h-52 bg-muted overflow-hidden">
             {post.cover_image_url ? (
-              <img
+              <OptimizedImage
                 src={post.cover_image_url}
                 alt=""
+                width={800}
+                sizes="(max-width: 768px) 100vw, 33vw"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             ) : (

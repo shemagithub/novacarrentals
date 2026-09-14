@@ -15,11 +15,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestimonialsSection } from "@/components/Testimonials";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import { NegotiablePriceBadge } from "@/components/NegotiablePriceBadge";
 import { useLang } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { fetchPublicCmsPage } from "@/lib/api";
 import { useDynamicPageSeo } from "@/hooks/useDynamicPageSeo";
-import { useFormatMoney } from "@/hooks/useFormatMoney";
 import { formatPageTitle, truncateDescription } from "@/lib/seo";
 import {
   FLEET_QUERY_KEY,
@@ -56,7 +57,7 @@ function GuideTeaserCard({ guide }: { guide: DisplayGuide }) {
         <div className="h-36 relative overflow-hidden bg-muted">
           {thumb ? (
             <>
-              <img src={thumb} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+              <OptimizedImage src={thumb} alt="" width={640} sizes="(max-width: 768px) 100vw, 33vw" className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/35" />
             </>
           ) : (
@@ -109,7 +110,6 @@ function FleetSkeleton() {
 export default function Home() {
   const { t } = useLang();
   const { branding, siteName, globalSeo, currency } = useSiteSettings();
-  const { formatRatePerDay } = useFormatMoney();
 
   const { data: cmsHome } = useQuery({
     queryKey: HOME_QUERY_KEY,
@@ -176,7 +176,6 @@ export default function Home() {
         id: m.id,
         name: m.name,
         type: m.category || m.type,
-        pricePerDay: m.pricePerDay,
         badge: m.badge || "",
         imageUrl: m.imageUrl,
       };
@@ -211,7 +210,7 @@ export default function Home() {
       <section className="relative h-screen min-h-[640px] flex items-center">
         <div className="absolute inset-0 z-0">
           {hero.imageUrl ? (
-            <img src={hero.imageUrl} alt={hero.imageAlt} className="w-full h-full object-cover" />
+            <OptimizedImage src={hero.imageUrl} alt={hero.imageAlt} width={1600} sizes="100vw" priority className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-card via-background to-card" />
           )}
@@ -413,9 +412,11 @@ export default function Home() {
                 >
                   <div className="aspect-[4/3] bg-muted relative overflow-hidden">
                     {car.imageUrl ? (
-                      <img
+                      <OptimizedImage
                         src={car.imageUrl}
                         alt={car.name}
+                        width={640}
+                        sizes="(max-width: 640px) 100vw, 25vw"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
@@ -423,9 +424,7 @@ export default function Home() {
                         <CarFront className="w-14 h-14 text-muted-foreground/15" />
                       </div>
                     )}
-                    <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur-sm px-3 py-1 text-sm font-bold">
-                      {t("fleet_from")} {formatRatePerDay(car.pricePerDay)}
-                    </div>
+                    <NegotiablePriceBadge />
                     {car.badge && (
                       <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 uppercase tracking-wider">
                         {car.badge}
@@ -490,11 +489,17 @@ export default function Home() {
               className="relative h-[520px]"
             >
               <div className="absolute inset-6 border border-primary/15 bg-primary/5" />
-              <img
-                src={destinations.imageUrl}
-                alt={destinations.eyebrow}
-                className="absolute inset-0 w-full h-full object-cover grayscale-[15%] hover:grayscale-0 transition-all duration-700 border border-border"
-              />
+              {destinations.imageUrl ? (
+                <OptimizedImage
+                  src={destinations.imageUrl}
+                  alt={destinations.eyebrow}
+                  width={1280}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="absolute inset-0 w-full h-full object-cover grayscale-[15%] hover:grayscale-0 transition-all duration-700 border border-border"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-muted border border-border" />
+              )}
               <div className="absolute bottom-6 right-6 bg-card/95 backdrop-blur border border-border p-4 max-w-[220px]">
                 <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">{destinations.crossBorderTitle}</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">{destinations.crossBorderDescription}</p>
