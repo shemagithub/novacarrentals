@@ -24,6 +24,7 @@ import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import { VehicleImage } from "@/components/VehicleImage";
 
 function RichBlock({ content, className }: { content: string; className?: string }) {
   if (isGuideHtml(content)) {
@@ -387,10 +388,11 @@ export default function GuideDetail() {
                             {t("fleet_negotiable")}
                           </span>
                         </div>
-                        {vehicle?.imageUrl ? (
-                          <OptimizedImage
+                        {vehicle ? (
+                          <VehicleImage
                             src={vehicle.imageUrl}
-                            alt=""
+                            category={vehicle.category}
+                            name={vehicle.name}
                             width={640}
                             sizes="(max-width: 1024px) 100vw, 320px"
                             className="w-full h-28 object-cover border border-border mb-3"

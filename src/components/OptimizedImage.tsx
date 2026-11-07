@@ -9,6 +9,8 @@ type OptimizedImageProps = {
   width?: number;
   sizes?: string;
   priority?: boolean;
+  /** Shown when `src` fails (e.g. category stock photo). */
+  fallbackSrc?: string;
 };
 
 export function OptimizedImage({
@@ -18,6 +20,7 @@ export function OptimizedImage({
   width = 800,
   sizes,
   priority = false,
+  fallbackSrc,
 }: OptimizedImageProps) {
   const optimized = withImageWidth(src, width);
   const [currentSrc, setCurrentSrc] = useState(optimized);
@@ -29,6 +32,17 @@ export function OptimizedImage({
   }, [src, width]);
 
   if (failed || !src) {
+    if (fallbackSrc) {
+      return (
+        <img
+          src={fallbackSrc}
+          alt={alt}
+          className={className}
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+        />
+      );
+    }
     return (
       <div
         className={`bg-muted flex items-center justify-center text-muted-foreground/40 ${className ?? ""}`}
@@ -48,9 +62,12 @@ export function OptimizedImage({
       fetchPriority={priority ? "high" : "low"}
       sizes={sizes}
       onError={() => {
-        // Retry the original URL without ?w= in case an older backend rejects it.
         if (currentSrc !== src) {
           setCurrentSrc(src);
+          return;
+        }
+        if (fallbackSrc && currentSrc !== fallbackSrc) {
+          setCurrentSrc(fallbackSrc);
           return;
         }
         setFailed(true);

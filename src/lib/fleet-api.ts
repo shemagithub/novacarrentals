@@ -1,5 +1,6 @@
 import { API_BASE } from "@/lib/api";
 import { cleanDisplayText } from "@/lib/display-text";
+import { resolveFleetImageUrl } from "@/lib/fleet-images";
 import { type Currency } from "@/lib/formatMoney";
 
 export interface PublicVehicleSummary {
@@ -234,8 +235,10 @@ export function mapVehicleToDisplay(
     tags: features.slice(0, 3).map(cleanDisplayText).filter(Boolean),
     badge: badge ? cleanDisplayText(badge) : undefined,
     status: v.status || "available",
-    imageUrl: v.image_url,
-    galleryImages: v.gallery_images?.length ? v.gallery_images : v.image_url ? [v.image_url] : [],
+    imageUrl: resolveFleetImageUrl(v.image_url, category, name),
+    galleryImages: (v.gallery_images?.length ? v.gallery_images : v.image_url ? [v.image_url] : [])
+      .map((u) => resolveFleetImageUrl(u, category, name))
+      .filter(Boolean),
     imagePlaceholder: (v.name?.charAt(0) || "🚗").toUpperCase(),
     description,
     highlights: highlights.length ? highlights.map(cleanDisplayText).filter(Boolean) : ["Professionally maintained fleet vehicle", "Fully insured for East Africa travel"],

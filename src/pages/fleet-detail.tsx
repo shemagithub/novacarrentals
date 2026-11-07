@@ -5,10 +5,10 @@ import { Link, useParams } from "wouter";
 import {
   ArrowLeft, ArrowRight, Users, Briefcase, Fuel, Zap,
   CheckCircle2, Phone, Shield,
-  Gauge, Car, Star, Clock, CarFront, MessageCircle,
+  Gauge, Car, Star, Clock, MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { OptimizedImage } from "@/components/OptimizedImage";
+import { VehicleImage } from "@/components/VehicleImage";
 import { NegotiablePriceBadge } from "@/components/NegotiablePriceBadge";
 import {
   FLEET_QUERY_KEY,
@@ -148,26 +148,15 @@ export default function FleetDetail() {
             {/* Vehicle image placeholder */}
             <motion.div {...fadeUp()} className="relative">
               <div className="aspect-[16/9] bg-gradient-to-br from-muted via-muted to-background/60 border border-border flex items-center justify-center relative overflow-hidden">
-                {heroImage ? (
-                  <OptimizedImage
-                    src={heroImage}
-                    alt={vehicle.name}
-                    width={1280}
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                    priority
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                ) : (
-                  <>
-                    <div className="absolute inset-0 opacity-5"
-                      style={{
-                        backgroundImage: "linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px)",
-                        backgroundSize: "40px 40px",
-                      }}
-                    />
-                    <CarFront className="w-24 h-24 text-muted-foreground/20" />
-                  </>
-                )}
+                <VehicleImage
+                  src={heroImage}
+                  category={vehicle.category}
+                  name={vehicle.name}
+                  width={1280}
+                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  priority
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent pointer-events-none" />
 
                 {/* Price badge */}
@@ -194,7 +183,14 @@ export default function FleetDetail() {
                 <div className="grid grid-cols-4 gap-1 mt-1">
                   {vehicle.galleryImages.slice(0, 4).map((url) => (
                     <div key={url} className="aspect-[4/3] bg-muted border border-border overflow-hidden">
-                      <OptimizedImage src={url} alt="" width={400} sizes="25vw" className="w-full h-full object-cover" />
+                      <VehicleImage
+                        src={url}
+                        category={vehicle.category}
+                        name={vehicle.name}
+                        width={400}
+                        sizes="25vw"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   ))}
                 </div>
@@ -416,17 +412,14 @@ export default function FleetDetail() {
                   className="group bg-background border border-border hover:border-primary/50 transition-all overflow-hidden"
                 >
                   <div className="aspect-[4/3] bg-muted relative flex items-center justify-center overflow-hidden">
-                    {v.imageUrl ? (
-                      <OptimizedImage
-                        src={v.imageUrl}
-                        alt={v.name}
-                        width={640}
-                        sizes="(max-width: 640px) 100vw, 33vw"
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    ) : (
-                      <CarFront className="w-12 h-12 text-muted-foreground/20" />
-                    )}
+                    <VehicleImage
+                      src={v.imageUrl}
+                      category={v.category}
+                      name={v.name}
+                      width={640}
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
                     <NegotiablePriceBadge />
                     {v.badge && (
                       <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 uppercase tracking-wider">

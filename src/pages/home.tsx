@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { TestimonialsSection } from "@/components/Testimonials";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import { VehicleImage } from "@/components/VehicleImage";
 import { NegotiablePriceBadge } from "@/components/NegotiablePriceBadge";
 import { useLang } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
@@ -176,6 +177,7 @@ export default function Home() {
         id: m.id,
         name: m.name,
         type: m.category || m.type,
+        category: m.category || m.type,
         badge: m.badge || "",
         imageUrl: m.imageUrl,
       };
@@ -411,19 +413,14 @@ export default function Home() {
                   className="group bg-card border border-border hover:border-primary/50 transition-all duration-300 overflow-hidden"
                 >
                   <div className="aspect-[4/3] bg-muted relative overflow-hidden">
-                    {car.imageUrl ? (
-                      <OptimizedImage
-                        src={car.imageUrl}
-                        alt={car.name}
-                        width={640}
-                        sizes="(max-width: 640px) 100vw, 25vw"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-muted to-background/80 flex items-center justify-center">
-                        <CarFront className="w-14 h-14 text-muted-foreground/15" />
-                      </div>
-                    )}
+                    <VehicleImage
+                      src={car.imageUrl}
+                      category={car.category}
+                      name={car.name}
+                      width={640}
+                      sizes="(max-width: 640px) 100vw, 25vw"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
                     <NegotiablePriceBadge />
                     {car.badge && (
                       <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 uppercase tracking-wider">

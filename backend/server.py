@@ -3441,6 +3441,14 @@ def _resolved_vehicle_public_storage_path(raw: str) -> Optional[str]:
     return p
 
 
+def _storage_image_is_servable(storage_path: str) -> bool:
+    """True when public vehicle-asset can return bytes (local copy or object storage configured)."""
+    if try_read_local_upload(storage_path):
+        return True
+    # Avoid emitting dead URLs that 404 in the browser when Emergent storage is unset.
+    return bool((os.environ.get("EMERGENT_LLM_KEY") or "").strip())
+
+
 def _resolve_single_vehicle_image_url(raw: Any, base: str) -> Optional[str]:
     """Turn stored vehicle image (http URL, /api/files URL, or storage path) into a browser-safe URL."""
     rs = str(raw or "").strip()
@@ -3449,10 +3457,15 @@ def _resolve_single_vehicle_image_url(raw: Any, base: str) -> Optional[str]:
     if rs.startswith(("http://", "https://")):
         inner = _resolved_vehicle_public_storage_path(rs)
         if inner:
+            if not _storage_image_is_servable(inner):
+                return None
             return f"{base}/api/public/vehicle-asset?path={quote(inner, safe='')}"
+        # External CDN / absolute image URL — leave as-is for the browser.
         return rs
     sp = _resolved_vehicle_public_storage_path(rs)
     if not sp:
+        return None
+    if not _storage_image_is_servable(sp):
         return None
     return f"{base}/api/public/vehicle-asset?path={quote(sp, safe='')}"
 
