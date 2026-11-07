@@ -2,14 +2,17 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent
-LOCAL_UPLOAD_ROOT = ROOT_DIR / "local_uploads"
-IMAGE_CACHE_DIR = LOCAL_UPLOAD_ROOT / ".imgcache"
 load_dotenv(ROOT_DIR / '.env')
 
 import base64
 import os
 import re
 import socket
+
+# Prefer LOCAL_UPLOAD_ROOT from env/.env so cPanel can point at a writable folder.
+_LOCAL_UPLOAD_ENV = (os.environ.get("LOCAL_UPLOAD_ROOT") or "").strip()
+LOCAL_UPLOAD_ROOT = Path(_LOCAL_UPLOAD_ENV).expanduser() if _LOCAL_UPLOAD_ENV else (ROOT_DIR / "local_uploads")
+IMAGE_CACHE_DIR = LOCAL_UPLOAD_ROOT / ".imgcache"
 from contextlib import asynccontextmanager
 import csv as _csv
 import io
@@ -1852,9 +1855,43 @@ ALLOWED_CONTENT_TYPES = {
 }
 
 
+def _normalize_storage_key(storage_path: str) -> str:
+    return (storage_path or "").replace("\\", "/").strip().lstrip("/")
+
+
+def _local_upload_candidate_roots() -> List[Path]:
+    """Roots to search for uploaded files (Passenger cwd can differ from __file__)."""
+    roots: List[Path] = []
+    for candidate in (
+        LOCAL_UPLOAD_ROOT,
+        ROOT_DIR / "local_uploads",
+        Path.cwd() / "local_uploads",
+        Path.cwd() / "backend" / "local_uploads",
+    ):
+        try:
+            resolved = candidate.resolve()
+        except OSError:
+            continue
+        if resolved not in roots:
+            roots.append(resolved)
+    return roots
+
+
+def _safe_path_under_root(base: Path, storage_path: str) -> Optional[Path]:
+    normalized = _normalize_storage_key(storage_path)
+    if not normalized or ".." in normalized.split("/"):
+        return None
+    try:
+        full = (base / normalized).resolve()
+        full.relative_to(base.resolve())
+        return full
+    except (OSError, ValueError):
+        return None
+
+
 def _safe_local_upload_path(storage_path: str) -> Path:
     """Resolve storage_path under LOCAL_UPLOAD_ROOT (blocks path traversal)."""
-    normalized = (storage_path or "").replace("\\", "/").strip().lstrip("/")
+    normalized = _normalize_storage_key(storage_path)
     if not normalized:
         raise HTTPException(status_code=400, detail="Invalid path")
     base = LOCAL_UPLOAD_ROOT.resolve()
@@ -1866,29 +1903,32 @@ def _safe_local_upload_path(storage_path: str) -> Path:
     return full
 
 
-def try_read_local_upload(storage_path: str) -> Optional[Tuple[bytes, str]]:
-    """Return (bytes, content_type) if file exists on disk under local_uploads/."""
-    try:
-        p = _safe_local_upload_path(storage_path)
-    except HTTPException:
-        return None
-    if not p.is_file():
-        return None
-    data = p.read_bytes()
-    ext = p.suffix.lower()
-    ct = {
+def _guess_upload_content_type(path: Path) -> str:
+    return {
         ".jpg": "image/jpeg",
         ".jpeg": "image/jpeg",
         ".png": "image/png",
         ".gif": "image/gif",
         ".webp": "image/webp",
         ".pdf": "application/pdf",
-    }.get(ext, "application/octet-stream")
-    return data, ct
+    }.get(path.suffix.lower(), "application/octet-stream")
+
+
+def try_read_local_upload(storage_path: str) -> Optional[Tuple[bytes, str]]:
+    """Return (bytes, content_type) if file exists under any known local_uploads root."""
+    for root in _local_upload_candidate_roots():
+        p = _safe_path_under_root(root, storage_path)
+        if p is None or not p.is_file():
+            continue
+        try:
+            return p.read_bytes(), _guess_upload_content_type(p)
+        except OSError:
+            logger.debug("try_read_local_upload failed path=%s", p, exc_info=True)
+    return None
 
 
 def save_local_upload(storage_path: str, content: bytes) -> None:
-    """Persist bytes on server disk (used when remote object storage is unavailable)."""
+    """Persist bytes on server disk (always kept for reliable public image serving)."""
     p = _safe_local_upload_path(storage_path)
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_bytes(content)
@@ -1899,7 +1939,13 @@ def fetch_file_bytes(storage_path: str) -> Tuple[bytes, str]:
     local = try_read_local_upload(storage_path)
     if local:
         return local
-    return get_object(storage_path)
+    try:
+        return get_object(storage_path)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("fetch_file_bytes: remote fetch failed path=%s", storage_path)
+        raise HTTPException(status_code=404, detail="File not found") from e
 
 
 _PUBLIC_IMAGE_CACHE_HEADERS = {
@@ -1916,14 +1962,20 @@ def _public_image_response(
 ) -> Response:
     """Compress/resize public images and send long-lived cache headers."""
     ct = (content_type or "").split(";")[0].strip() or "application/octet-stream"
+    if not data:
+        raise HTTPException(status_code=404, detail="Empty image")
     if ct.startswith("image/") and ct not in ("image/gif", "image/svg+xml"):
-        data, ct = prepare_public_image(
-            data,
-            ct,
-            storage_path=storage_path,
-            width=width,
-            cache_dir=IMAGE_CACHE_DIR,
-        )
+        try:
+            data, ct = prepare_public_image(
+                data,
+                ct,
+                storage_path=storage_path,
+                width=width,
+                cache_dir=IMAGE_CACHE_DIR,
+            )
+        except Exception:
+            # Never let compression break public <img> delivery.
+            logger.debug("public image compress skipped path=%s", storage_path, exc_info=True)
     return Response(content=data, media_type=ct, headers=_PUBLIC_IMAGE_CACHE_HEADERS)
 
 
@@ -1970,7 +2022,12 @@ def put_object(path: str, data: bytes, content_type: str) -> dict:
 def get_object(path: str) -> tuple:
     key = init_storage()
     if not key:
-        raise HTTPException(status_code=503, detail="Storage not configured")
+        # Prefer a not-found response for <img> tags over a hard 503 when only remote
+        # storage was ever written and EMERGENT_LLM_KEY is missing on this host.
+        raise HTTPException(
+            status_code=404,
+            detail="File not found (no local copy; object storage not configured)",
+        )
     resp = requests.get(
         f"{STORAGE_URL}/objects/{path}",
         headers={"X-Storage-Key": key}, timeout=60,
@@ -1979,6 +2036,11 @@ def get_object(path: str) -> tuple:
         global storage_key
         storage_key = None
         key = init_storage()
+        if not key:
+            raise HTTPException(
+                status_code=404,
+                detail="File not found (no local copy; object storage not configured)",
+            )
         resp = requests.get(
             f"{STORAGE_URL}/objects/{path}",
             headers={"X-Storage-Key": key}, timeout=60,
@@ -2006,16 +2068,25 @@ async def upload_file(
     safe_folder = folder.strip("/").replace("..", "")
     path = f"{APP_NAME}/{safe_folder}/{uuid.uuid4()}.{ext}"
     file_id = str(uuid.uuid4())
+    storage_path = path
     try:
         result = put_object(path, content, ct)
-        storage_path = result["path"]
+        storage_path = result.get("path") or path
     except Exception as e:
         logger.warning(
-            "Object storage upload failed (%s); saving to local_uploads/ under backend/ (path still in MySQL files + blog document).",
+            "Object storage upload failed (%s); keeping local_uploads/ copy only.",
             e,
         )
-        save_local_upload(path, content)
-        storage_path = path
+    # Always keep a local copy so /public/*-asset works without EMERGENT_LLM_KEY.
+    try:
+        save_local_upload(storage_path, content)
+    except Exception as e:
+        logger.error("Failed to save local upload %s: %s", storage_path, e)
+        if not try_read_local_upload(storage_path):
+            raise HTTPException(
+                status_code=503,
+                detail="Could not store file locally. Check LOCAL_UPLOAD_ROOT permissions.",
+            ) from e
     await mysql_file_insert({
         "id": file_id,
         "storage_path": storage_path,
@@ -5352,6 +5423,12 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.exception("Database startup failed during schema or seed")
         raise
+    try:
+        LOCAL_UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
+        IMAGE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        logger.info("Local uploads directory: %s", LOCAL_UPLOAD_ROOT.resolve())
+    except OSError as e:
+        logger.error("Cannot create local uploads dir %s: %s", LOCAL_UPLOAD_ROOT, e)
     init_storage()
     yield
     await mysql_close()
